@@ -14,16 +14,9 @@ from werkzeug.utils import secure_filename
 
 from filestore_interface import create_file_store_interface
 
-DISALLOWED_EXTENSIONS = {"html", "php"}
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 1024 ** 3  # 1 GB
-
-
-def allowed_file(filename):
-    return (
-        "." in filename and filename.split(".")[-1].lower() not in DISALLOWED_EXTENSIONS
-    )
 
 
 @app.route("/")
