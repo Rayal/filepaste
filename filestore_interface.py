@@ -1,23 +1,22 @@
-
 from os import environ
 from uuid import uuid4
 import psycopg2 as pg  # type: ignore
 
 
 def get_database_url() -> str:
-    return environ['DATABASE_URL']
+    return environ["DATABASE_URL"]
 
 
 def get_database_password() -> str:
     try:
-        return environ['DATABASE_PASSWORD']
+        return environ["DATABASE_PASSWORD"]
     except KeyError:
         return ""
 
 
 class FileStoreInterface:
     def _create_connection(self, **kwargs) -> None:
-        self._connection = pg.connect(self._database_url, sslmode='require', **kwargs)
+        self._connection = pg.connect(self._database_url, sslmode="require", **kwargs)
         self._cursor = self._connection.cursor()
 
     def __init__(self, **kwargs):
@@ -37,11 +36,7 @@ class FileStoreInterface:
     def insert_file(self, filename: str, file_data: bytes) -> str:
         uuid = str(uuid4())
         query = "INSERT INTO paste (id, filename, file_data) VALUES (%(id)s, %(str)s, %(bytes)s);"
-        mapping = {
-            'id': uuid,
-            'str': filename,
-            'bytes': file_data
-        }
+        mapping = {"id": uuid, "str": filename, "bytes": file_data}
         self._cursor.execute(query, mapping)
         self._connection.commit()
         return uuid
