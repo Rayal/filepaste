@@ -54,12 +54,17 @@ def upload():
 
 
 @app.route("/file/<file_id>")
-def download(file_id):
+def get_file(file_id):
     with create_file_store_interface() as interface:
         filename, file_data = interface.get_file(file_id)
         return send_file(
             BytesIO(bytes(file_data)), as_attachment=True, attachment_filename=filename
         )
+
+
+@app.route("/download/<file_id>")
+def download(file_id):
+    return get_file(file_id)
 
 
 @app.route("/file/<file_id>", methods=["DELETE"])
