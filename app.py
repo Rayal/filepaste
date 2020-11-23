@@ -25,7 +25,7 @@ def hello_world():
 
 
 @app.route("/file", methods=["GET", "POST"])
-def upload():
+def upload_file():
     if request.method == "POST":
         if "file" not in request.files:
             flash("No file found")
@@ -51,6 +51,11 @@ def upload():
           <input type=submit value=Upload>
         </form>
         """
+
+
+@app.route("/upload", methods=["GET", "POST"])
+def upload():
+    return upload_file()
 
 
 @app.route("/file/<file_id>")
