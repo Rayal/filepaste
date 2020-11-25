@@ -3,17 +3,14 @@ from io import BytesIO
 from flask import (
     Flask,
     request,
-    redirect,
-    flash,
     make_response,
-    jsonify,
     send_file,
     render_template,
 )
-from werkzeug.utils import secure_filename
 
+from controllers.files_controller import upload_file, download_file, delete_file, purge_files
 from filestore_interface import create_file_store_interface
-
+from views.files_views import upload_file_view, upload_file_success, delete_file_success, purge_files_success
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 1024 ** 3  # 1 GB
@@ -25,46 +22,26 @@ def hello_world():
 
 
 @app.route("/file", methods=["GET", "POST"])
-def upload_file():
+def file():
     if request.method == "POST":
-        if "file" not in request.files:
-            flash("No file found")
-            return redirect(request.url)
-        file = request.files["file"]
-        if file.filename == "":
-            flash("No file found")
-            return redirect(request.url)
-        if file:
-            filename = secure_filename(file.filename)
-            with create_file_store_interface() as interface:
-                file_id = interface.insert_file(filename, file.read())
-                response = make_response(jsonify({"fileId": file_id}), 201)
-            response.headers["Content-Type"] = "application/json"
-            return response
-
-    return """
-        <!doctype html>
-        <title>Upload new File</title>
-        <h1>Upload new File</h1>
-        <form method=post enctype=multipart/form-data>
-          <input type=file name=file>
-          <input type=submit value=Upload>
-        </form>
-        """
+        file_id, filename = upload_file(request)
+        return upload_file_success(
+            filename=filename, download_location=f"/file/{file_id}"
+        )
+    return upload_file_view()
 
 
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
-    return upload_file()
+    return file()
 
 
 @app.route("/file/<file_id>")
 def get_file(file_id):
-    with create_file_store_interface() as interface:
-        filename, file_data = interface.get_file(file_id)
-        return send_file(
-            BytesIO(bytes(file_data)), as_attachment=True, attachment_filename=filename
-        )
+    file_data, filename = download_file(file_id)
+    return send_file(
+        BytesIO(file_data), as_attachment=True, attachment_filename=filename
+    )
 
 
 @app.route("/download/<file_id>")
@@ -74,9 +51,8 @@ def download(file_id):
 
 @app.route("/file/<file_id>", methods=["DELETE"])
 def delete(file_id):
-    with create_file_store_interface() as interface:
-        interface.delete_file(file_id)
-    return make_response()
+    filename = delete_file(file_id)
+    return delete_file_success(filename, "/file")
 
 
 @app.route("/files", methods=["GET", "DELETE"])
@@ -86,8 +62,14 @@ def get_files():
             files = interface.get_files()
             return render_template("files_list.html", files=files)
     else:
-        with create_file_store_interface() as interface:
-            interface.purge_files()
+        purge_files()
+        return purge_files_success("/files")
+
+
+@app.route("/<path:path>")
+def catch_all(path):
+    response = make_response(f"Whoops! The endpoint {path} doesn't exist", 404)
+    return response
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ class PasteBin(Base):
     The class PasteBin uses the SQLAlchemy Base system to define a SQL table which will contain all the plaintext data.
     The metadata will be used to maintain the database and ensure private data stays private.
     """
+
     __tablename__ = "pastebin"
 
     id = Column(Integer, primary_key=True)
@@ -31,4 +32,3 @@ class PasteBin(Base):
         :param hours: If the date and time in the 'created' column is older than the value of this, the respective row gets deleted.
         :return: None
         """
-

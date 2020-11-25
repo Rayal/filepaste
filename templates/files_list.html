@@ -9,9 +9,18 @@
 <p></p>
 <ul>
     {% for file in files %}
-        <li><a href="/file/{{ file[0] }}" target="_blank">{{ file[1] }}</a></li>
+        <li>
+            <form method="delete" target="/file/{{ file[0] }}">
+                <input type="submit" value="Delete File">
+            </form>
+            <a href="/file/{{ file[0] }}" target="_blank">{{ file[1] }}</a>
+        </li>
     {% endfor %}
 </ul>
+
+<form method="delete" target="files">
+    <input type="submit" value="Delete All">
+</form>
 
 </body>
 </html>
