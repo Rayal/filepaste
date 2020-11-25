@@ -21,3 +21,7 @@ def delete_file_success(filename: str, upload_url: str) -> str:
 
 def purge_files_success(upload_url: str) -> str:
     return render_template("purge_files_success.html", upload_url=upload_url)
+
+
+def file_list_view(files: list) -> str:
+    return render_template("files_list.html", files=files)

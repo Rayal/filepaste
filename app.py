@@ -1,16 +1,21 @@
 from io import BytesIO
 
-from flask import (
-    Flask,
-    request,
-    make_response,
-    send_file,
-    render_template,
-)
+from flask import Flask, request, make_response, send_file
 
-from controllers.files_controller import upload_file, download_file, delete_file, purge_files
+from controllers.files_controller import (
+    upload_file,
+    download_file,
+    delete_file,
+    purge_files,
+)
 from filestore_interface import create_file_store_interface
-from views.files_views import upload_file_view, upload_file_success, delete_file_success, purge_files_success
+from views.files_views import (
+    upload_file_view,
+    upload_file_success,
+    delete_file_success,
+    purge_files_success,
+    file_list_view,
+)
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 1024 ** 3  # 1 GB
@@ -59,8 +64,7 @@ def delete(file_id):
 def get_files():
     if request.method == "GET":
         with create_file_store_interface() as interface:
-            files = interface.get_files()
-            return render_template("files_list.html", files=files)
+            return file_list_view(interface.get_files())
     else:
         purge_files()
         return purge_files_success("/files")
